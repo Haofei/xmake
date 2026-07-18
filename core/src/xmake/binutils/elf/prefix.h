@@ -56,6 +56,9 @@
 #define XM_ELF_MACHINE_WASM      0xe7
 #define XM_ELF_MACHINE_LOONGARCH 0x102
 
+// PowerPC64 e_flags: the ELF ABI version is stored in the low 2 bits (see bfd/elf64-ppc.c)
+#define XM_EF_PPC64_ABI_V2       0x2
+
 #define XM_ELF_SHT_PROGBITS      0x1
 #define XM_ELF_SHT_SYMTAB        0x2
 #define XM_ELF_SHT_STRTAB        0x3
@@ -295,6 +298,30 @@ static __tb_inline__ tb_uint16_t xm_binutils_elf_get_machine(tb_char_t const *ar
  */
 static __tb_inline__ tb_bool_t xm_binutils_elf_is_64bit(tb_char_t const *arch) {
     return xm_binutils_arch_is_64bit(arch);
+}
+
+/* get the default e_flags for the given architecture
+ *
+ * some architectures encode the ABI in e_flags and the linker refuses to merge objects
+ * whose ABI flags are incompatible. we default to the flags used by the common toolchains.
+ *
+ * note: bin2obj emits little-endian objects and xmake only has a single "ppc64" arch
+ * (find_platform maps both powerpc64 and powerpc64le to it), so ppc64 is treated as
+ * ppc64le and defaults to the OpenPOWER ELFv2 ABI, matching gcc/clang on little-endian
+ * PowerPC. big-endian ppc64 (ELFv1) is not representable and thus not supported here.
+ *
+ * @param arch    the architecture string
+ * @return        the e_flags value
+ */
+static __tb_inline__ tb_uint32_t xm_binutils_elf_get_flags(tb_char_t const *arch) {
+    if (!arch) {
+        return 0;
+    }
+    // ppc64/ppc64le/powerpc64/powerpc64le: OpenPOWER ELFv2 ABI
+    if (tb_strncmp(arch, "ppc64", 5) == 0 || tb_strncmp(arch, "powerpc64", 9) == 0) {
+        return XM_EF_PPC64_ABI_V2;
+    }
+    return 0;
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////

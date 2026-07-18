@@ -122,6 +122,7 @@ static tb_bool_t xm_binutils_bin2elf_dump_32(tb_stream_ref_t istream,
     header.e_ident[7] = 0; // ELFOSABI_SYSV
     header.e_type = 1; // ET_REL
     header.e_machine = xm_binutils_elf_get_machine(arch);
+    header.e_flags = xm_binutils_elf_get_flags(arch);
     header.e_version = 1;
     header.e_shoff = section_headers_ofs;
     header.e_ehsize = header_size;
@@ -422,6 +423,7 @@ static tb_bool_t xm_binutils_bin2elf_dump_64(tb_stream_ref_t istream,
     header.e_ident[7] = 0; // ELFOSABI_SYSV
     header.e_type = 1; // ET_REL
     header.e_machine = xm_binutils_elf_get_machine(arch);
+    header.e_flags = xm_binutils_elf_get_flags(arch);
     header.e_version = 1;
     header.e_shoff = section_headers_ofs;
     header.e_ehsize = header_size;
